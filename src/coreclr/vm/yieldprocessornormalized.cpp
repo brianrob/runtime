@@ -36,6 +36,8 @@ static void InitializeYieldProcessorNormalized()
     s_isYieldProcessorNormalizedInitialized = true;
 
     GCHeapUtilities::GetGCHeap()->SetYieldProcessorScalingFactor((float)yieldsPerNormalizedYield);
+    printf("YieldsPerNormalizedYield: %d\n", yieldsPerNormalizedYield);
+    printf("OptimalMaxNormalizedYieldsPerSpinIteration: %d\n", optimalMaxNormalizedYieldsPerSpinIteration);
 }
 
 void EnsureYieldProcessorNormalizedInitialized()
