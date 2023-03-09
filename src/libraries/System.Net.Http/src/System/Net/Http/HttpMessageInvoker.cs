@@ -40,10 +40,11 @@ namespace System.Net.Http
             if (ShouldSendWithTelemetry(request))
             {
                 HttpTelemetry.Log.RequestStart(request);
-
+                HttpResponseMessage? response = null;
                 try
                 {
-                    return _handler.Send(request, cancellationToken);
+                    response = _handler.Send(request, cancellationToken);
+                    return response;
                 }
                 catch when (LogRequestFailed(telemetryStarted: true))
                 {
@@ -52,7 +53,8 @@ namespace System.Net.Http
                 }
                 finally
                 {
-                    HttpTelemetry.Log.RequestStop();
+                    int statusCode = response != null ? (int)response.StatusCode : -1;
+                    HttpTelemetry.Log.RequestStop(statusCode);
                 }
             }
             else
@@ -77,10 +79,11 @@ namespace System.Net.Http
             static async Task<HttpResponseMessage> SendAsyncWithTelemetry(HttpMessageHandler handler, HttpRequestMessage request, CancellationToken cancellationToken)
             {
                 HttpTelemetry.Log.RequestStart(request);
-
+                HttpResponseMessage? response = null;
                 try
                 {
-                    return await handler.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                    response = await handler.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                    return response;
                 }
                 catch when (LogRequestFailed(telemetryStarted: true))
                 {
@@ -89,7 +92,8 @@ namespace System.Net.Http
                 }
                 finally
                 {
-                    HttpTelemetry.Log.RequestStop();
+                    int statusCode = response != null ? (int)response.StatusCode : -1;
+                    HttpTelemetry.Log.RequestStop(statusCode);
                 }
             }
         }

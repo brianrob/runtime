@@ -227,7 +227,7 @@ namespace System.Net.Http
             }
             finally
             {
-                FinishSend(cts, disposeCts, telemetryStarted, responseContentTelemetryStarted);
+                FinishSend(cts, disposeCts, response, telemetryStarted, responseContentTelemetryStarted);
             }
         }
 
@@ -306,7 +306,7 @@ namespace System.Net.Http
             }
             finally
             {
-                FinishSend(cts, disposeCts, telemetryStarted, responseContentTelemetryStarted);
+                FinishSend(cts, disposeCts, response, telemetryStarted, responseContentTelemetryStarted);
             }
         }
 
@@ -352,7 +352,7 @@ namespace System.Net.Http
             }
             finally
             {
-                FinishSend(cts, disposeCts, telemetryStarted, responseContentTelemetryStarted: false);
+                FinishSend(cts, disposeCts, response, telemetryStarted, responseContentTelemetryStarted: false);
             }
         }
 
@@ -496,7 +496,7 @@ namespace System.Net.Http
             }
             finally
             {
-                FinishSend(cts, disposeCts, telemetryStarted, responseContentTelemetryStarted);
+                FinishSend(cts, disposeCts, response, telemetryStarted, responseContentTelemetryStarted);
             }
         }
 
@@ -551,7 +551,7 @@ namespace System.Net.Http
                 }
                 finally
                 {
-                    FinishSend(cts, disposeCts, telemetryStarted, responseContentTelemetryStarted);
+                    FinishSend(cts, disposeCts, response, telemetryStarted, responseContentTelemetryStarted);
                 }
             }
         }
@@ -642,7 +642,7 @@ namespace System.Net.Http
             return false;
         }
 
-        private static void FinishSend(CancellationTokenSource cts, bool disposeCts, bool telemetryStarted, bool responseContentTelemetryStarted)
+        private static void FinishSend(CancellationTokenSource cts, bool disposeCts, HttpResponseMessage? response, bool telemetryStarted, bool responseContentTelemetryStarted)
         {
             // Log completion.
             if (HttpTelemetry.Log.IsEnabled() && telemetryStarted)
@@ -652,7 +652,8 @@ namespace System.Net.Http
                     HttpTelemetry.Log.ResponseContentStop();
                 }
 
-                HttpTelemetry.Log.RequestStop();
+                int statusCode = response != null ? (int)response.StatusCode :  -1;
+                HttpTelemetry.Log.RequestStop(statusCode);
             }
 
             // Dispose of the CancellationTokenSource if it was created specially for this request

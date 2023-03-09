@@ -50,11 +50,11 @@ namespace System.Net.Http
                 request.VersionPolicy);
         }
 
-        [Event(2, Level = EventLevel.Informational)]
-        public void RequestStop()
+        [Event(2, Level = EventLevel.Informational, Version = 1)]
+        public void RequestStop(int statusCode)
         {
             Interlocked.Increment(ref _stoppedRequests);
-            WriteEvent(eventId: 2);
+            WriteEvent(eventId: 2, statusCode);
         }
 
         [Event(3, Level = EventLevel.Error)]
