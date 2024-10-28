@@ -2588,8 +2588,7 @@ ErrExit:
 //  MethodSectionIterator class is used to iterate hot (or) cold method section in an ngen image.
 //  Also used to iterate over jitted methods in the code heap
 //
-MethodSectionIterator::MethodSectionIterator(const void *code, SIZE_T codeSize,
-                                             const void *codeTable, SIZE_T codeTableSize)
+MethodSectionIterator::MethodSectionIterator(const void *code, const void *codeTable, SIZE_T codeTableSize)
 {
     //For DAC builds,we'll read the table one DWORD at a time.  Note that m_code IS
     //NOT a host pointer.

@@ -562,7 +562,7 @@ DeleteJitHeapCache
 
 #if !defined(DACCESS_COMPILE)
 EEJitManager::CodeHeapIterator::CodeHeapIterator(LoaderAllocator *pLoaderAllocatorFilter)
-    : m_lockHolder(&(ExecutionManager::GetEEJitManager()->m_CodeHeapCritSec)), m_Iterator(NULL, 0, NULL, 0)
+    : m_lockHolder(&(ExecutionManager::GetEEJitManager()->m_CodeHeapCritSec)), m_Iterator(NULL, NULL, 0)
 {
     CONTRACTL
     {
@@ -572,11 +572,15 @@ EEJitManager::CodeHeapIterator::CodeHeapIterator(LoaderAllocator *pLoaderAllocat
     }
     CONTRACTL_END;
 
+    // TODO: We're going to need to take a lock on creation of the iterator, and free it on destruction.
+    // This will ensure that we don't have multiple concurrent iterators, which would require ref-counting on each of the HeapList instances
+    // to ensure that we don't delete one that happens to be in-use.
+
     m_pHeapList = NULL;
     m_pLoaderAllocator = pLoaderAllocatorFilter;
     m_pHeapList = ExecutionManager::GetEEJitManager()->GetCodeHeapList();
     if(m_pHeapList)
-        new (&m_Iterator) MethodSectionIterator((const void *)m_pHeapList->mapBase, (COUNT_T)m_pHeapList->maxCodeHeapSize, m_pHeapList->pHdrMap, (COUNT_T)HEAP2MAPSIZE(ROUND_UP_TO_PAGE(m_pHeapList->maxCodeHeapSize)));
+        new (&m_Iterator) MethodSectionIterator((const void *)m_pHeapList->mapBase, m_pHeapList->pHdrMap, (COUNT_T)m_pHeapList->iterEndAddress);
 };
 
 EEJitManager::CodeHeapIterator::~CodeHeapIterator()
@@ -610,7 +614,7 @@ BOOL EEJitManager::CodeHeapIterator::Next()
             m_pHeapList = m_pHeapList->GetNext();
             if(!m_pHeapList)
                 return FALSE;
-            new (&m_Iterator) MethodSectionIterator((const void *)m_pHeapList->mapBase, (COUNT_T)m_pHeapList->maxCodeHeapSize, m_pHeapList->pHdrMap, (COUNT_T)HEAP2MAPSIZE(ROUND_UP_TO_PAGE(m_pHeapList->maxCodeHeapSize)));
+            new (&m_Iterator) MethodSectionIterator((const void *)m_pHeapList->mapBase, m_pHeapList->pHdrMap, (COUNT_T)m_pHeapList->iterEndAddress);
         }
         else
         {
@@ -2446,6 +2450,8 @@ HeapList* LoaderCodeHeap::CreateCodeHeap(CodeHeapRequestInfo *pInfo, LoaderHeap 
     pHp->pHdrMap         = (DWORD*)(void*)pJitMetaHeap->AllocMem(S_SIZE_T(nibbleMapSize));
 
     pHp->pLoaderAllocator = pInfo->m_pAllocator;
+    pHp->iterReserved = true;
+    pHp->iterEndAddress = pHp->endAddress;
 
     LOG((LF_JIT, LL_INFO100,
          "Created new CodeHeap(" FMT_ADDR ".." FMT_ADDR ")\n",

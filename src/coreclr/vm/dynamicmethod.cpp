@@ -468,6 +468,9 @@ HeapList* HostCodeHeap::InitializeHeapList(CodeHeapRequestInfo *pInfo)
     pHp->maxCodeHeapSize = m_TotalBytesAvailable - (pTracker ? pTracker->size : 0);
     pHp->reserveForJumpStubs = 0;
 
+    pHp->iterReserved = true;
+    pHp->iterEndAddress = pHp->endAddress;
+
 #ifdef HOST_64BIT
     ExecutableWriterHolder<BYTE> personalityRoutineWriterHolder(pHp->CLRPersonalityRoutine, 12);
     emitJump(pHp->CLRPersonalityRoutine, personalityRoutineWriterHolder.GetRW(), (void *)ProcessCLRException);

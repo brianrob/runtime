@@ -428,8 +428,7 @@ class MethodSectionIterator
     //If code is a target pointer, then GetMethodCode and FindMethodCode return
     //target pointers.  codeTable may be a pointer of either type, since it is
     //converted internally into a host pointer.
-    MethodSectionIterator(const void *code, SIZE_T codeSize,
-                          const void *codeTable, SIZE_T codeTableSize);
+    MethodSectionIterator(const void *code, const void *codeTable, SIZE_T codeTableSize);
     BOOL Next();
     BYTE *GetMethodCode() { return m_current; } // Get the start of method code of the current method in the iterator
 };

@@ -388,6 +388,9 @@ struct HeapList
     BYTE*               CLRPersonalityRoutine;  // jump thunk to personality routine
 #endif
 
+    bool                iterReserved; // Set to true when the HeapList is in-use by CodeHeapIterator.
+    TADDR               iterEndAddress; // The value of endAddress when the CodeHeapIterator requested this CodeHeap.
+
     TADDR GetModuleBase()
     {
 #if defined(TARGET_AMD64) || defined(TARGET_ARM64) || defined(TARGET_LOONGARCH64) || defined(TARGET_RISCV64)
@@ -402,6 +405,18 @@ struct HeapList
 
     void SetNext(PTR_HeapList next)
     { hpNext = next; }
+
+    void ReserveForIteration()
+    {
+        iterReserved = true;
+        iterEndAddress = endAddress;
+    }
+
+    void FreeFromIteration()
+    {
+        iterEndAddress = 0;
+        iterReserved = false;
+    }
 
 };
 
